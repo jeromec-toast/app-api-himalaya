@@ -14,6 +14,7 @@ using Sa.Common.ADO.DataAccess;
 using Microsoft.CodeAnalysis;
 using System.Xml.Linq;
 using Tenant.Query.Uitility;
+using Tenant.API.Base.Model.Validation;
 
 namespace Tenant.Query.Repository.Product
 {
@@ -31,9 +32,74 @@ namespace Tenant.Query.Repository.Product
             _dataAccess = dataAccess;
         }
 
+        #region Example methods
         public override Task<ProductMaster> GetById(string tenantId, string id)
         {
             throw new NotImplementedException();
+        }
+
+        public DataTable VendorLookupById(Int64 tenantVendorId, Int64 tenantID)
+        {
+            try
+            {
+                return _dataAccess.ExecuteDataTable(Model.Constant.Constant.StoredProcedures.SA_REALTIMEOCR_GET_TENANT_VENDOR_DETAIL, tenantVendorId, tenantID);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public long InsertImage(string imageName, string orgImageName, long userId)
+        {
+            try
+            {
+                var cmd = _dataAccess.ExecuteNonQueryCMD(Model.Constant.Constant.StoredProcedures.SP_ADD_IMAGES, imageName, orgImageName, userId);
+                return Convert.ToInt64(cmd.Parameters["@RETURN_VALUE"].Value.ToString());
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public long AddInvoice(long tenantId, long locationId)
+        {
+            try
+            {
+
+                //_dataAccess.ExecuteScalar(Model.Constant.Constant.StoredProcedures.SA_REALTIMEOCR_ADD_INVOICE
+                //    , tenantId
+                //    , locationId);
+
+                var invoiceIndex = _dataAccess.ExecuteDataTable(Model.Constant.Constant.StoredProcedures.SA_REALTIMEOCR_ADD_INVOICE,
+                       tenantId,
+                       locationId);
+
+                if (invoiceIndex.Rows.Count > 0)
+                {
+                    return Convert.ToInt64(invoiceIndex.Rows[0]["INVOICE_INDEX"]);
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public DataTable ValidateVendor(long tenantId, long locationId)
+        {
+            try
+            {
+                return _dataAccess.ExecuteDataTable(Model.Constant.Constant.StoredProcedures.SA_REALTIMEOCR_VALIDATE_VENDOR, tenantId, locationId);
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         internal async Task<List<ProductMaster>> GetProductMaster(string tenantId, PorductFilter filter)
@@ -203,7 +269,21 @@ namespace Tenant.Query.Repository.Product
             }
         }
 
-        
+        //public Models.Group GetProductGroupById(string tenantId, string groupId, string SpName)
+        //{
+        //    try
+        //    {
+        //        Models.Group group = _dataAccess.ExecuteGenericList<Models.Group>(SpName, tenantId, groupId).AsEnumerable().FirstOrDefault();
+        //        SetProductGroupAggregate(new List<Models.Group> { group });
+
+        //        return group;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw;
+        //    }
+        //}
+
         /// <summary>
         /// 
         /// </summary>
@@ -269,7 +349,7 @@ namespace Tenant.Query.Repository.Product
             SqlParameter RestaurantGuidParam = Utility.PrepareParametersForStoreProcedure("@RESTAURANTGUID", SqlDbType.VarChar, string.Empty, RestaurantGuid);
             SqlParameter LocationGuidParam = Utility.PrepareParametersForStoreProcedure("@LOCATIONGUID", SqlDbType.VarChar, string.Empty, LocationGuid);
             Model.Product.ProductMaster partnerEventDetails = this.DbContext.productMasters.FromSqlRaw($"exec {storeProcedureName} @RESTAURANTGUID, @LOCATIONGUID", RestaurantGuidParam, LocationGuidParam).AsNoTracking().AsEnumerable().FirstOrDefault();
-            
+
             return partnerEventDetails;
         }
 
@@ -287,6 +367,7 @@ namespace Tenant.Query.Repository.Product
             {
                 throw ex;
             }
-        }
+        } 
+        #endregion
     }
 }

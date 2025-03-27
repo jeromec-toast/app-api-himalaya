@@ -1,7 +1,5 @@
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,7 +50,8 @@ namespace Tenant.Query
         {
             //initialize base services
             TnBaseStartup.InitializeServices(Configuration, services);
-
+			services.AddMvc().AddNewtonsoftJson();
+			services.AddSingleton(Configuration);
             services.AddMvc().
                 AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize);
 

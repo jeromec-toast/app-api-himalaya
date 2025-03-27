@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -34,6 +35,22 @@ namespace Tenant.Query.Service.Product
             this.productRepository = productRepository;
             this._loggerFactory = loggerFactory;
             this.productRepository.Logger = loggerFactory.CreateLogger<Repository.Product.ProductRepository>();
+        }
+
+        private static void MapInvoiceTenantVendor(ProductMaster productMaster, DataRow row)
+        {
+            productMaster.Id = GetColumnValue<long>(row, "tenant_vendor_id", 0);
+            productMaster.ProductName= GetColumnValue<string>(row, "tenant_vendor_name", string.Empty);
+            productMaster.Active= GetColumnValue<bool>(row, "default_invoice_id_as_invoice_date", false);
+        }
+
+        private static T GetColumnValue<T>(DataRow row, string columnName, T defaultValue = default)
+        {
+            if (row.Table.Columns.Contains(columnName) && row[columnName] != DBNull.Value)
+            {
+                return (T)Convert.ChangeType(row[columnName], typeof(T));
+            }
+            return defaultValue;
         }
 
         internal List<Model.Product.ProductMaster> GetProductMaster(string tenantId, PorductFilter filter)

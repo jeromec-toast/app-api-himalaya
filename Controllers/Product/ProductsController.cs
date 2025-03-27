@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -159,9 +160,10 @@ namespace Tenant.Query.Controllers.Product
             }
         }
 
+
         [HttpGet]
         [Route("tenants/{tenantId}/product-master")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(Model.Product.ProductCategory))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(Model.Product.ProductMaster))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Bad request", typeof(ApiResult))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Resource not found", typeof(ApiResult))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal server error", typeof(ApiResult))]
@@ -188,7 +190,7 @@ namespace Tenant.Query.Controllers.Product
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResult() { Exception = ex.Message });
             }
         }
-
+        
         [HttpGet]
         [Route("{productId}/product-details")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(Model.Product.ProductCategory))]
